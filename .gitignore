@@ -73,7 +73,8 @@ GPATH
 GRTAGS
 GSYMS
 GTAGS
-
+zImage
+*.tar
 *.orig
 *~
 \#*#
