@@ -51,7 +51,7 @@ snd-soc-wm8988-objs := wm8988.o
 snd-soc-wm8990-objs := wm8990.o
 snd-soc-wm8993-objs := wm8993.o
 ifeq ($(CONFIG_ARIES_NTT),y)
-snd-soc-wm8994-objs := wm8994_samsung.o wm8994_s1ntt.o
+snd-soc-wm8994-objs := wm8994_samsung.o wm8994_s1ntt.o wm8994_voodoo.o
 else
 snd-soc-wm8994-objs := wm8994_samsung.o wm8994_aries.o
 endif
@@ -67,6 +67,10 @@ snd-soc-tpa6130a2-objs := tpa6130a2.o
 snd-soc-wm2000-objs := wm2000.o
 snd-soc-wm9090-objs := wm9090.o
 
+
+ifeq ($(CONFIG_SND_VOODOO_MODULE),m)
+obj-$(CONFIG_SND_VOODOO_MODULE)  += voodoo-sound-tegrak-module/
+endif
 obj-$(CONFIG_SND_SOC_AC97_CODEC)	+= snd-soc-ac97.o
 obj-$(CONFIG_SND_SOC_AD1836)	+= snd-soc-ad1836.o
 obj-$(CONFIG_SND_SOC_AD193X)	+= snd-soc-ad193x.o

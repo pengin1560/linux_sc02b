@@ -40,6 +40,10 @@
 #include <plat/gpio-cfg.h>
 #include <mach/regs-clock.h>
 #include "wm8994_samsung.h"
+#ifdef CONFIG_SND_VOODOO
+#include "wm8994_voodoo.h"
+#endif
+
 
 #if defined USE_INFINIEON_EC_FOR_VT
 #include "../s3c24xx/s3c-pcmdev.h"
@@ -181,11 +185,14 @@ int wm8994_write(struct snd_soc_codec *codec, unsigned int reg,
 	 * D15..D9 WM8993 register offset
 	 * D8...D0 register data
 	 */
-	 
+
 #if defined(CONFIG_ARIES_NTT)
 	//ssong100903. WM8994 Applications Issue Report CE000681 Changing digital path or clock enable bits when active may result in no sound output 
 	if(reg == 0x5) value |= 0x3303;
 #endif
+#ifdef CONFIG_SND_VOODOO
+value = voodoo_hook_wm8994_write(codec, reg, value);
+#endif	 
 	 
 	data[0] = (reg & 0xff00) >> 8;
 	data[1] = reg & 0x00ff;
@@ -3312,6 +3319,11 @@ static int wm8994_i2c_probe(struct i2c_client *i2c,
 	control_data1 = i2c;
 
 	ret = wm8994_init(wm8994_priv, pdata);
+
+#ifdef CONFIG_SND_VOODOO
+	voodoo_hook_wm8994_pcm_probe(codec);
+#endif
+
 	if (ret) {
 		dev_err(&i2c->dev, "failed to initialize WM8994\n");
 		goto err_init;
