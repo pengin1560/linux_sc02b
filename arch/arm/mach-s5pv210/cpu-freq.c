@@ -79,7 +79,7 @@ unsigned int freq_uv_table[10][3] = {
 		{100000, 950,	950}
 };
 
-		struct s5pv210_dvs_conf {
+struct s5pv210_dvs_conf {
 	unsigned long       arm_volt;   /* uV */
 	unsigned long       int_volt;   /* uV */
 };
@@ -570,8 +570,10 @@ static int s5pv210_cpufreq_target(struct cpufreq_policy *policy,
 	if (s3c_freqs.freqs.new == s3c_freqs.freqs.old && !first_run)
 		goto out;
 
+	if(unlikely(exp_UV_mV[index] < -50)) 
+		exp_UV_mV[index] = -50;
+	
 	arm_volt = (dvs_conf[index].arm_volt - (exp_UV_mV[index]*1000));
-	freq_uv_table[index][2] = (int) arm_volt / 1000;
 	int_volt = dvs_conf[index].int_volt;
 
 	/* New clock information update */
@@ -758,8 +760,11 @@ static int s5pv210_cpufreq_target(struct cpufreq_policy *policy,
 	memcpy(&s3c_freqs.old, &s3c_freqs.new, sizeof(struct s3c_freq));
 	cpufreq_debug_printk(CPUFREQ_DEBUG_DRIVER, KERN_INFO,
 			"cpufreq: Performance changed[L%d]\n", index);
-	previous_arm_volt = (dvs_conf[index].arm_volt - (exp_UV_mV[index] * 1000));
-	freq_uv_table[index][2] = (int) previous_arm_volt / 1000;
+
+	if(unlikely(exp_UV_mV[index] < -50))
+		exp_UV_mV[index] = -50;
+
+	previous_arm_volt = (dvs_conf[index].arm_volt - (exp_UV_mV[index]*1000));
 
 	if (first_run)
 		first_run = false;
@@ -802,8 +807,11 @@ static int s5pv210_cpufreq_resume(struct cpufreq_policy *policy)
 
 	memcpy(&s3c_freqs.old, &clk_info[level],
 			sizeof(struct s3c_freq));
-	previous_arm_volt = (dvs_conf[level].arm_volt - (exp_UV_mV[level] * 1000));
-	freq_uv_table[level][2] = (int) previous_arm_volt / 1000;
+
+	if(unlikely(exp_UV_mV[level] < -50))
+		exp_UV_mV[level] = -50;
+
+	previous_arm_volt = (dvs_conf[level].arm_volt - (exp_UV_mV[level]*1000));
 
 	return ret;
 }
@@ -871,15 +879,22 @@ static int __init s5pv210_cpufreq_driver_init(struct cpufreq_policy *policy)
 
 	memcpy(&s3c_freqs.old, &clk_info[level],
 			sizeof(struct s3c_freq));
-	previous_arm_volt = (dvs_conf[level].arm_volt - (exp_UV_mV[level] * 1000));
-	freq_uv_table[level][2] = (int) previous_arm_volt / 1000;
+
+	if(unlikely(exp_UV_mV[level] < -50))
+		exp_UV_mV[level] = -50;
+
+	previous_arm_volt = (dvs_conf[level].arm_volt - (exp_UV_mV[level]*1000));
 
 #ifdef CONFIG_DVFS_LIMIT
 	for(i = 0; i < DVFS_LOCK_TOKEN_NUM; i++)
 		g_dvfslockval[i] = MAX_PERF_LEVEL;
 #endif
 
-	return cpufreq_frequency_table_cpuinfo(policy, freq_table);
+cpufreq_frequency_table_cpuinfo(policy, freq_table);
+//initial max speed 1.0GHz
+policy->max = 1000000;
+policy->min = 100000;
+return 0;
 }
 
 static int s5pv210_cpufreq_notifier_event(struct notifier_block *this,
