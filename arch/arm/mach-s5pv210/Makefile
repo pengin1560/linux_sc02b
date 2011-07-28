@@ -61,4 +61,4 @@ obj-$(CONFIG_S5PV210_SETUP_FIMC2)	+= setup-fimc2.o
 obj-$(CONFIG_S5PV210_SETUP_CSIS)	+= setup-csis.o
 
 
-obj-$(CONFIG_CPU_IDLE)		+= cpuidle.o didle.o
+obj-$(CONFIG_CPU_IDLE)		+= cpuidle.o
